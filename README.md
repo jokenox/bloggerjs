@@ -10,16 +10,20 @@ El script "limpia" la URL, eliminando de ella la fecha ```"/YYYY/MM"``` o el ```
 Para implementar **BloggerJS** en tu blog, copia todo el siguiente código:
 ```javascript
 <script>
-// BloggerJS v0.1.0
-// Copyright (c) 2017 Kenny Cruz
+// BloggerJS v0.2.1
+// Copyright (c) 2017-2018 Kenny Cruz
 // Licensed under the MIT License
 
-var postsOrPages = ["pages", "posts"],
-    urlAmp = "&amp;".substring(0, 1),
+// Configuration -----------
+var postsDatePrefix = false;
+var accessOnly = false;
+// -------------------------
+
+var postsOrPages = ["posts", "pages"],
+    amp = "&amp;".substring(0, 1),
+    urlTotal, jsonIndex = 1,
     secondRequest = true,
-    feedPriority = 0,
-    jsonIndex = 1,
-    urlTotal;
+    feedPriority = 0;
 
 function urlVal(){
   var url = window.location.pathname;
@@ -38,7 +42,8 @@ function urlMod(){
     history.replaceState(null, null, "../" + url);
   }
   else{
-    url = url.substring(url.indexOf("/",7) + 1);
+    if(!postsDatePrefix) url = url.substring(url.indexOf("/",7) + 1);
+    else url = url.substring(1);
     url = url.substr(0, url.indexOf(".html"));
     history.replaceState(null, null, "../../" + url);
   }
@@ -54,23 +59,30 @@ function urlSearch(url, database){
 
 function urlManager(){
   var validation = urlVal();
-  if(validation === 0) urlMod();
-  else if(validation === 1) getJSON(postsOrPages[feedPriority], 1);
-  else if(validation === 2) history.replaceState(null, null, "/");
+  if(validation === 0){
+    if(!accessOnly) urlMod();
+  }
+  else if(validation === 1){
+    if(!postsDatePrefix) getJSON(postsOrPages[feedPriority], 1);
+    else getJSON("posts", 1);
+  }
+  else if(validation === 2){
+    if(!accessOnly) history.replaceState(null, null, "/");
+  }
 }
 
 function getJSON(postsOrPages, index){
-  var script = document.createElement("script");
+  var script = document.createElement('script');
   var jsonUrl = window.location.protocol + "//" + window.location.hostname + "/feeds/" + postsOrPages + "/default?start-index=" + index + "#max-results=150#orderby=published#alt=json-in-script#callback=bloggerJSON";
-  jsonUrl = jsonUrl.replace(/#/g, urlAmp);
-  script.type = "text/javascript";
+  jsonUrl = jsonUrl.replace(/#/g, amp);
+  script.type = 'text/javascript';
   script.src = jsonUrl;
-  document.getElementsByTagName("head")[0].appendChild(script);
+  document.getElementsByTagName('head')[0].appendChild(script);
 }
 
 function bloggerJSON(json){
   var database = [];
-  if(urlTotal == undefined) urlTotal = parseInt(json.feed.openSearch$totalResults.$t);
+  if(urlTotal === undefined) urlTotal = parseInt(json.feed.openSearch$totalResults.$t);
   json.feed.entry.forEach(function(element, index){
     var entry = json.feed.entry[index];
     entry.link.forEach(function(element, index){
@@ -89,17 +101,17 @@ function bloggerJSON(json){
     secondRequest = false;
     if(feedPriority === 0){
       feedPriority = 1;
-      getJSON(postsOrPages[feedPriority], 1);
+      getJSON("pages", 1);
     }
     else if(feedPriority === 1){
       feedPriority = 0;
-      getJSON(postsOrPages[feedPriority], 1);
+      getJSON("posts", 1);
     }
   }
 }
 
 function bloggerJS(priority){
-  if(priority != undefined) feedPriority = priority;
+  if(priority) feedPriority = priority;
   urlManager();
 }
 
@@ -116,6 +128,8 @@ Ya que copiaste completamente el código anterior, dirígete al código HTML de 
 ```
 Una vez hecho esto, sólo guarda los cambios hechos a tu plantilla. Después de ello, **BloggerJS** estará funcionando.
 
+Recuerda que también en su lugar, puedes usar la versión minificada de BloggerJS, que se encuentra en el archivo ```blogger.min.js``` de este repositorio.
+
 ## Licencia
 Licensed under the [MIT License](./LICENSE).<br/>
-Copyright (c) 2017 [Kenny Cruz](https://github.com/jokenox).
+Copyright (c) 2017-2018 [Kenny Cruz](https://github.com/jokenox).

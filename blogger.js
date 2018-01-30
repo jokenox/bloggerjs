@@ -1,16 +1,26 @@
-// BloggerJS v0.1.0
-// Copyright (c) 2017 Kenny Cruz
+// BloggerJS v0.2.1
+// Copyright (c) 2017-2018 Kenny Cruz
 // Licensed under the MIT License
 
-var postsOrPages = ["pages", "posts"],
-    urlAmp = "&amp;".substring(0, 1),
+// Configuración -----------
+
+// Permite las fechas en las URL de entradas.
+var postsDatePrefix = false;
+
+// URL cortas sólo para entrar al sitio,
+// mas no en su funcionamiento general.
+var accessOnly = false;
+
+// -------------------------
+
+var postsOrPages = ["posts", "pages"],
+    amp = "&amp;".substring(0, 1),
+    urlTotal, jsonIndex = 1,
     secondRequest = true,
-    feedPriority = 0,
-    jsonIndex = 1,
-    urlTotal;
+    feedPriority = 0;
 
 // urlVal();
-// Valida si la URL corresponde a un post/pagina, si no,
+// Valida si la URL corresponde a un post/página, si no,
 // o si corresponde al index.
 function urlVal(){
 
@@ -25,8 +35,8 @@ function urlVal(){
 }
 
 // urlMod();
-// Analiza la URL para identificar si se trata de un post o una pagina,
-// para despues modificarla eliminando la fecha o el "/p/", así como el ".html".
+// Analiza la URL para identificar si se trata de un post o una página,
+// para después modificarla eliminando la fecha o el "/p/", así como el ".html".
 function urlMod(){
 
   var url = window.location.pathname;
@@ -37,7 +47,8 @@ function urlMod(){
     history.replaceState(null, null, "../" + url);
   }
   else{
-    url = url.substring(url.indexOf("/",7) + 1);
+    if(!postsDatePrefix) url = url.substring(url.indexOf("/",7) + 1);
+    else url = url.substring(1);
     url = url.substr(0, url.indexOf(".html"));
     history.replaceState(null, null, "../../" + url);
   }
@@ -45,7 +56,7 @@ function urlMod(){
 }
 
 // urlSearch(url, database);
-// Busca una url especifica en la base de datos, si la encuentra,
+// Busca una url específica en la base de datos, si la encuentra,
 // entonces dirigirá a ella.
 function urlSearch(url, database){
 
@@ -65,9 +76,16 @@ function urlManager(){
 
   var validation = urlVal();
 
-  if(validation === 0) urlMod();
-  else if(validation === 1) getJSON(postsOrPages[feedPriority], 1);
-  else if(validation === 2) history.replaceState(null, null, "/");
+  if(validation === 0){
+    if(!accessOnly) urlMod();
+  }
+  else if(validation === 1){
+    if(!postsDatePrefix) getJSON(postsOrPages[feedPriority], 1);
+    else getJSON("posts", 1);
+  }
+  else if(validation === 2){
+    if(!accessOnly) history.replaceState(null, null, "/");
+  }
 
 }
 
@@ -76,12 +94,13 @@ function urlManager(){
 // y los envía mediante un callback.
 function getJSON(postsOrPages, index){
 
-  var script = document.createElement("script");
+  var script = document.createElement('script');
   var jsonUrl = window.location.protocol + "//" + window.location.hostname + "/feeds/" + postsOrPages + "/default?start-index=" + index + "#max-results=150#orderby=published#alt=json-in-script#callback=bloggerJSON";
-  jsonUrl = jsonUrl.replace(/#/g, urlAmp);
-  script.type = "text/javascript";
+  jsonUrl = jsonUrl.replace(/#/g, amp);
+
+  script.type = 'text/javascript';
   script.src = jsonUrl;
-  document.getElementsByTagName("head")[0].appendChild(script);
+  document.getElementsByTagName('head')[0].appendChild(script);
 
 }
 
@@ -92,7 +111,7 @@ function bloggerJSON(json){
 
   var database = [];
 
-  if(urlTotal == undefined) urlTotal = parseInt(json.feed.openSearch$totalResults.$t);
+  if(urlTotal === undefined) urlTotal = parseInt(json.feed.openSearch$totalResults.$t);
 
   json.feed.entry.forEach(function(element, index){
     var entry = json.feed.entry[index];
@@ -109,32 +128,30 @@ function bloggerJSON(json){
     getJSON(postsOrPages[feedPriority], jsonIndex);
   }
   else if(secondRequest){
-
     urlTotal = undefined;
     jsonIndex = 1;
     secondRequest = false;
-
     if(feedPriority === 0){
       feedPriority = 1;
-      getJSON(postsOrPages[feedPriority], 1);
+      getJSON("pages", 1);
     }
     else if(feedPriority === 1){
       feedPriority = 0;
-      getJSON(postsOrPages[feedPriority], 1);
+      getJSON("posts", 1);
     }
-
   }
 
 }
 
 // bloggerJS();
 // Incializa BloggerJS.
-// Puede recibir como parametro el orden de busqueda para las URL,
+// Puede recibir como parámetro el orden de búsqueda para las URL,
 // es decir, si iniciará a comparar contra las entradas o las páginas.
-// 0 ó vacío = Páginas, 1 = Entradas.
+// 0 ó vacío = Entradas, 1 = Páginas.
 function bloggerJS(priority){
 
-  if(priority != undefined) feedPriority = priority;
+  if(priority) feedPriority = priority;
+
   urlManager();
 
 }
