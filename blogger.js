@@ -1,4 +1,4 @@
-// BloggerJS v0.3.0
+// BloggerJS v0.3.1
 // Copyright (c) 2017-2018 Kenny Cruz
 // Licensed under the MIT License
 
@@ -18,7 +18,7 @@ var blogId = "";
 
 // -------------------------
 
-var postsOrPages = ["posts", "pages"],
+var postsOrPages = ["pages", "posts"],
     urlTotal, jsonIndex = 1,
     secondRequest = true,
     feedPriority = 0,
@@ -75,8 +75,7 @@ function urlManager(){
     if(!accessOnly) urlMod();
   }
   else if(validation === 1){
-    if(!postsDatePrefix) getJSON(postsOrPages[feedPriority], 1);
-    else getJSON("posts", 1);
+    getJSON(postsOrPages[feedPriority], 1);
   }
   else if(validation === 2){
     if(!accessOnly) history.replaceState(null, null, "/");
@@ -108,17 +107,23 @@ function bloggerJSON(json){
 
   if(!useApiV3) if(urlTotal === undefined) urlTotal = parseInt(json.feed.openSearch$totalResults.$t);
   if(!useApiV3){
-    json.feed.entry.forEach(function(element, index){
-      var entry = json.feed.entry[index];
-      entry.link.forEach(function(element, index){
-        if(entry.link[index].rel === "alternate") database.push(entry.link[index].href);
+    try{
+      json.feed.entry.forEach(function(element, index){
+        var entry = json.feed.entry[index];
+        entry.link.forEach(function(element, index){
+          if(entry.link[index].rel === "alternate") database.push(entry.link[index].href);
+        });
       });
-    });
+    }
+    catch(e){}
   }
   else{
-    json.items.forEach(function(element, index){
-      database.push(element.url);
-    });
+    try{
+      json.items.forEach(function(element, index){
+        database.push(element.url);
+      });
+    }
+    catch(e){}
     nextPageToken = json.nextPageToken;
   }
 
@@ -139,11 +144,11 @@ function bloggerJSON(json){
     secondRequest = false;
     if(feedPriority === 0){
       feedPriority = 1;
-      getJSON("pages", 1);
+      getJSON("posts", 1);
     }
     else if(feedPriority === 1){
       feedPriority = 0;
-      getJSON("posts", 1);
+      getJSON("pages", 1);
     }
   }
 }
@@ -151,8 +156,8 @@ function bloggerJSON(json){
 // bloggerJS();
 // Incializa BloggerJS.
 // Puede recibir como parámetro el orden de búsqueda para las URL,
-// es decir, si iniciará a comparar contra las entradas o las páginas.
-// 0 ó vacío = Entradas, 1 = Páginas.
+// es decir, si iniciará a comparar contra las páginas o las entradas.
+// 0 ó vacío = Páginas, 1 = Entradas.
 function bloggerJS(priority){
   if(priority) feedPriority = priority;
   urlManager();
