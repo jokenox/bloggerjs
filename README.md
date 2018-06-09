@@ -1,8 +1,13 @@
 <p align="center"><a href="#" target="_blank"><img width="100" src="/resources/logo.svg"></a></p>
 <h1>BloggerJS</h1>
+<p>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg"></a>
+  <a href="https://github.com/jokenox/bloggerjs/tree/2ea81a1"><img src="https://img.shields.io/badge/latest%20ver-v0.3.1-orange.svg"></a>
+</p>
 
 **BloggerJS** es un script para modificar el formato de las URL en un blog de Blogger. Creando visualmente una mejor navegación.<br/><br/>
-El script "limpia" la URL, eliminando de ella la fecha ```"/YYYY/MM"``` o el ```"/p"```, según sea el caso, así como también el ```".html"```. De esta manera resulta más cómodo compartir una URL, pues luce mucho mejor.<br/>
+El script se integra a tu blog y "limpia" las URLs en todo el sitio durante la navegación, eliminando de ellas la fecha ```"/YYYY/MM"``` o el ```"/p"```, según sea el caso, así como también el ```".html"```.
+También de esta manera resulta más cómodo compartir una URL, pues luce mucho mejor.<br/>
 <p><img src="/resources/url_demo.png"></p>
 
 ## Implementación
@@ -53,6 +58,20 @@ Ya que copiaste completamente el código anterior, dirígete al código HTML de 
 ...
 ```
 Una vez hecho esto, sólo guarda los cambios hechos a tu plantilla. Después de ello, **BloggerJS** estará funcionando.
+
+### Nota:
+Aunque con sólo copiar y pegar el código, **BloggerJS** estará funcionando, es recomendable (sobre todo para blogs con mucho contenido) configurar el script para funcionar con el API v3 de Blogger, pues funcionará más rápido.
+
+## Configuración
+Al principio del script encontrarás variables de configuración, modificar estas propiedades es opcional. La descripción de cada una está en la siguiente tabla:
+
+| Propiedad       | Valor por defecto | Descripción                                                                             |
+|-----------------|-------------------|-----------------------------------------------------------------------------------------|
+| postsDatePrefix | false             | Permitir la fecha en las URLs de las entradas/posts.                                    |
+| accessOnly      | false             | Las URLs cortas sólo sirven para acceder al sitio, mas no en su funcionamiento general. |
+| useApiV3        | false             | Usar API v3 de Blogger.                                                                 |
+| apiKey          | vacío             | API Key para el uso del API v3 de Blogger.                                              |
+| blogId          | vacío             | ID del blog (para uso del API v3 de Blogger).                                           |
 
 ## Licencia
 Licensed under the [MIT License](./LICENSE).<br/>
